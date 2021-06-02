@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
-const schema = mongoose.schema;
+const Schema = mongoose.Schema;
 
-const PriceSchema = new mongoose.Schema({
+const PriceSchema = new Schema({
     zip: {
         type: Number
     },

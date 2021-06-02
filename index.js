@@ -8,7 +8,10 @@ const bodyParser = require('body-parser');
 
 const PriceModel = require('./Model/PriceModel');
 const ParametersModel = require('./Model/ParameterModel');
+const AvgParameterModel = require('./Model/AvgParameter');
 const AssociatedZipModel = require('./Model/AssociatedZip');
+
+const Calculator = require('./Calculator');
 
 const cors = require('cors');
 const app = express();
@@ -25,15 +28,18 @@ mongoose.connect(uri,{
 .then(() => console.log('Mongodb connection successful'))
 .catch(err => console.log(err))
 
-app.post('/submit', (req, res) => {
+app.post('/submit', (req, res) => {    
     // UploadFreshData();
-    let response = {
-        result: 'new result'
-    };
 
-    res.end(JSON.stringify(response));
+    Calculator(req.body)
+        .then((result) => {
+            let response = {
+                result,
+            };
+        
+            res.end(JSON.stringify(response));
+        })
 });
-
 
 function UploadFreshData() {
     ClearAllRecords();
@@ -45,7 +51,7 @@ function UploadFreshData() {
 
 function UploadPriceData() {
 
-    readXlsxFile('./model.xlsm', { sheet: 'price per type and year' }).then((rows) => {
+    readXlsxFile('../model.xlsm', { sheet: 'price per type and year' }).then((rows) => {
         let years = rows[0].filter((cell) => typeof cell === 'number');
         let allRows = [];
 
@@ -86,7 +92,6 @@ function UploadPriceData() {
                 }
             }            
         });
-        console.log(allRows.length);
         PriceModel.collection.insertMany(allRows)
             .then(() => console.log("Successfully inserted prices data!!"))
             .catch(err => {
@@ -96,20 +101,29 @@ function UploadPriceData() {
 }
 
 function UploadParameters(sheetName,type) {
-    readXlsxFile('./model.xlsm', { sheet: sheetName }).then((rows) => {
+    readXlsxFile('../model.xlsm', { sheet: sheetName }).then((rows) => {
         let years = rows[0].filter((cell) => typeof cell === 'number');
-        let allRows = [];        
+        let allParameterRows = [];   
+        let allAvgParameterRows = [];     
 
         rows.forEach((row,idx) => {              
             if(idx < 1) {
                 return;
             }
+
+            let avgParamRowData = {
+                zip: row[0],
+                avg: (row[row.length-1]*100).toFixed(2),
+                type: type
+            }
+
+            allAvgParameterRows.push(avgParamRowData);
+
             let rowData = {};
             let yearIndex = 0;             
             for(let i = 1;i < row.length-1;i++) {                          
                 rowData.type = type;
-                rowData.zip = row[0]; 
-                rowData.avg = row[row.length-1];  
+                rowData.zip = row[0];  
                 let cell = row[i];
 
                 if(!cell) {
@@ -119,20 +133,26 @@ function UploadParameters(sheetName,type) {
                 rowData.year = years[yearIndex];
                 rowData.rate = (cell*100).toFixed(2);           
                 yearIndex++; 
-                allRows.push(rowData);   
+                allParameterRows.push(rowData);   
                 rowData = {};   
             }     
         });
-        ParametersModel.collection.insertMany(allRows)
+        ParametersModel.collection.insertMany(allParameterRows)
             .then(() => console.log(`Successfully inserted ${sheetName} data!!`)) 
             .catch(err => {
                 console.log(err);
-            })     
+            })   
+            
+        AvgParameterModel.collection.insertMany(allAvgParameterRows)
+            .then(() => console.log(`Successfully inserted ${sheetName} Avg data!!`)) 
+            .catch(err => {
+                console.log(err);
+            })   
     });
 }
 
 function UploadAssociatedZips() {
-    readXlsxFile('./model.xlsm', { sheet: 'Associated Zips' }).then((rows) => {
+    readXlsxFile('../model.xlsm', { sheet: 'Associated Zips' }).then((rows) => {
         let allRows = [];        
 
         rows.forEach((row,idx) => {              
@@ -147,8 +167,7 @@ function UploadAssociatedZips() {
 
             allRows.push(rowData);
 
-        });
-        console.log(allRows);   
+        }); 
         AssociatedZipModel.collection.insertMany(allRows)
             .then(() => console.log("Successfully inserted associated zips data!!"))
             .catch(err => {
@@ -162,8 +181,12 @@ function ClearAllRecords() {
         .then(() => console.log("Successfully deleted all records in prices collection"))
         .catch(err => console.log(err))
     
-    PriceModel.deleteMany({})
+    ParametersModel.deleteMany({})
         .then(() => console.log("Successfully deleted all records in parameters collection"))
+        .catch(err => console.log(err))
+
+    AvgParameterModel.deleteMany({})
+        .then(() => console.log("Successfully deleted all records in avg parameters collection"))
         .catch(err => console.log(err))
 
     AssociatedZipModel.deleteMany({})

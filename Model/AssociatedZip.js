@@ -1,11 +1,11 @@
 const mongoose = require("mongoose");
-const schema = mongoose.schema;
+const Schema = mongoose.Schema;
 
-const AssociatedZipSchema = new mongoose.Schema({
+const AssociatedZipSchema = new Schema({
     zip: {
         type: Number
     },
-    associatedZips: {
+    associatedZip: {
         type: Number
     }
 });

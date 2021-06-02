@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
-const schema = mongoose.schema;
+const Schema = mongoose.Schema;
 
-const ParameterSchema = new mongoose.Schema({
+const ParameterSchema = new Schema({
     year: {
         type: Number
     },
@@ -12,9 +12,6 @@ const ParameterSchema = new mongoose.Schema({
         type: Number
     },
     zip: {
-        type: Number
-    },
-    avg: {
         type: Number
     }
 });
