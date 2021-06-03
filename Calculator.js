@@ -23,7 +23,10 @@ module.exports = async function Calculator(userInput) {
     let errMsg = GetErrorMsg(propertyRate,constructionPrice,renovationFV);
 
     if(errMsg) {
-        return errMsg;
+        return {
+            err: true,
+            value: errMsg
+        };
     }
 
     let timeSinceConstr = getTimeSinceConstr(cyear);
@@ -32,7 +35,9 @@ module.exports = async function Calculator(userInput) {
 
     let result = priceFV * (propertyType === 'house'?landArea:surfaceHabitable) + renovationFV * renovationPrice;
 
-    return result;
+    return {
+        value: result
+    };
 }
 
 function GetErrorMsg(propertyRate,constructionPrice,renovationFV) {

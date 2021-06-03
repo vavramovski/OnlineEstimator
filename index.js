@@ -10,6 +10,7 @@ const PriceModel = require('./Model/PriceModel');
 const ParametersModel = require('./Model/ParameterModel');
 const AvgParameterModel = require('./Model/AvgParameter');
 const AssociatedZipModel = require('./Model/AssociatedZip');
+const UserInputSchema = require('./Model/UserInput');
 
 const Calculator = require('./Calculator');
 
@@ -38,8 +39,16 @@ app.post('/submit', (req, res) => {
 
     Calculator(req.body)
         .then((result) => {
+            let resValue = result.value;
+
+            if(!result.err) {
+                UserInputSchema.collection.insertOne(req.body)
+                    .then(() => console.log("Successfully inserted user input"))
+                    .catch((err) => console.log(err))
+            }  
+
             let response = {
-                result,
+                resValue,
             };
         
             res.end(JSON.stringify(response));
