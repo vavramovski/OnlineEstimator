@@ -142,7 +142,8 @@ async function getConstructionPrice(cyear,zip,propertyType) {
 
 function getTimeSinceConstr(cyear) {
     let {year,month,date} = getCurrentDate();
-    if(cyear <= 2019) {
+    if(cyear >= 2004 && 
+        cyear <= 2019) {
         return year + month/12 + date/365.25 - (cyear + 0.5);
     }else {
         return year + month / 12 + date / 365.25 - (latestYear + 0.5)
@@ -153,7 +154,7 @@ function getCurrentDate() {
     let dateObj = new Date();
     let year = dateObj.getFullYear();
     let month = dateObj.getMonth();
-    let date = dateObj.getDate();
+    let date = 2//dateObj.getDate();
 
     return {year,month,date};
 }
