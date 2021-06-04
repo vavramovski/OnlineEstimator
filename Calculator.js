@@ -1,4 +1,4 @@
-
+//git test
 let latestYear = 2019;
 const PriceModel = require('./Model/PriceModel');
 const ParametersModel = require('./Model/ParameterModel');
