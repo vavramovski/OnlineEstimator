@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const uri = "mongodb+srv://Giacomo:LmQntqv4tcgRXxoN@cluster0.rv3kt.mongodb.net/OnlineEstimatorDB?retryWrites=true&w=majority";
 
 const readXlsxFile = require('read-excel-file/node');
+const Excel = require('exceljs')
 const bodyParser = require('body-parser');
 
 const PriceModel = require('./Model/PriceModel');
@@ -35,6 +36,7 @@ mongoose.connect(uri,{
 
 app.post('/submit', (req, res) => {    
     // UploadFreshData();
+    // DownloadUserInputs();
 
     Calculator(req.body)
         .then((result) => {
@@ -53,6 +55,48 @@ app.post('/submit', (req, res) => {
             res.end(JSON.stringify(response));
         })
 });
+
+async function DownloadUserInputs() {
+    let allRows = await UserInputSchema.find({});
+    if(allRows.length) {
+        let workbook = new Excel.Workbook();
+        let worksheet = workbook.addWorksheet('User Inputs');
+
+        worksheet.columns = [
+            {header: 'Email Id', key: 'email'},
+            {header: 'Zip', key: 'zip'},    
+            {header: 'Type', key: 'typeSelected'},
+            {header: 'Construction Year', key: 'cyear'},
+            {header: 'Renovation Year', key: 'ryear'},
+            {header: 'Surface Habitable', key: 'surfaceHabitable'},
+            {header: 'Renovation Price', key: 'renovationPrice'},
+            {header: 'Land Area', key: 'landArea'},
+            {header: 'Renovation Check', key: 'renovationCheck'}
+        ];
+
+        worksheet.columns.forEach(column => {
+            column.width = column.header.length < 12 ? 12 : column.header.length
+        });
+        worksheet.getRow(1).font = {bold: true};
+
+        allRows.forEach((row) => {
+            let rowData = {
+                email: row.email,
+                zip: row.zip,
+                typeSelected: row.typeSelected,
+                cyear: row.cyear,
+                ryear: row.ryear,
+                surfaceHabitable: row.surfaceHabitable,
+                renovationPrice: row.renovationPrice,
+                landArea: row.landArea,
+                renovationCheck: row.renovationCheck
+            }
+            worksheet.addRow(rowData);
+        });
+
+        workbook.xlsx.writeFile('../UserInput.xlsx');
+    }
+}
 
 function UploadFreshData() {
     ClearAllRecords();
