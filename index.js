@@ -14,7 +14,6 @@ const UserInputSchema = require('./Model/UserInput');
 
 const Calculator = require('./Calculator');
 
-// const cors = require('cors');
 const app = express();
 const port = 3000;
 
@@ -127,7 +126,7 @@ function UploadParameters(sheetName,type) {
 
             let avgParamRowData = {
                 zip: row[0],
-                avg: (row[row.length-1]*100).toFixed(2),
+                avg: (row[row.length-1]*100),
                 type: type
             }
 
@@ -145,7 +144,7 @@ function UploadParameters(sheetName,type) {
                 }
 
                 rowData.year = years[yearIndex];
-                rowData.rate = (cell*100).toFixed(2);           
+                rowData.rate = (cell*100);           
                 yearIndex++; 
                 allParameterRows.push(rowData);   
                 rowData = {};   
@@ -204,8 +203,8 @@ function ClearAllRecords() {
         .catch(err => console.log(err))
 
     AssociatedZipModel.deleteMany({})
-    .then(() => console.log("Successfully deleted all records in associated zips collection"))
-    .catch(err => console.log(err))
+        .then(() => console.log("Successfully deleted all records in associated zips collection"))
+        .catch(err => console.log(err))
 }
 
 app.listen(port,() => console.log(`Server running on port ${port}`));

@@ -31,7 +31,7 @@ module.exports = async function Calculator(userInput) {
 
     let timeSinceConstr = getTimeSinceConstr(cyear);
 
-    let priceFV = constructionPrice * Math.pow(1 + propertyRate,timeSinceConstr);
+    let priceFV = constructionPrice * Math.pow(1 + (propertyRate/100),timeSinceConstr);
 
     let result = priceFV * (propertyType === 'house'?landArea:surfaceHabitable) + renovationFV * renovationPrice;
 
@@ -116,7 +116,7 @@ async function getConstructionPrice(cyear,zip,propertyType) {
         //fetch data based on zip and type and year as 2019 and type will be new
         let obj = {
             zip,
-            year: 2019,
+            year: latestYear,
         }
 
         let priceObj = await PriceModel.find(obj);
@@ -131,7 +131,7 @@ async function getConstructionPrice(cyear,zip,propertyType) {
         //fetch data based on zip and type and year as 2019 and type will be old
         let obj = {
             zip,
-            year: cyear,
+            year: latestYear,
         }
 
         let priceObj = await PriceModel.find(obj);
@@ -158,8 +158,8 @@ function getTimeSinceConstr(cyear) {
 function getCurrentDate() {
     let dateObj = new Date();
     let year = dateObj.getFullYear();
-    let month = dateObj.getMonth();
-    let date = 2//dateObj.getDate();
+    let month = dateObj.getMonth() + 1;
+    let date = dateObj.getDate();
 
     return {year,month,date};
 }
