@@ -28,7 +28,10 @@ const UserInputSchema = new Schema({
     },
     typeSelected: {
         type: String
-    }
+    },
+    finalPrice: {
+        type: Number
+    },    
 });
 
 module.exports = UserInput = mongoose.model('UserInput',UserInputSchema);

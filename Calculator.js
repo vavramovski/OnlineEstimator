@@ -36,7 +36,7 @@ module.exports = async function Calculator(userInput) {
     let result = priceFV * (propertyType === 'house'?landArea:surfaceHabitable) + renovationFV * renovationPrice;
 
     return {
-        value: result
+        value: result.toFixed(0)
     };
 }
 
@@ -170,7 +170,7 @@ async function getRenovationFv(ryear,renovationCheck,propertyType,zip) {
         let renovationRate = await getRenovationRate(ryear,propertyType,zip);
         let {year,month,date} = getCurrentDate();
         timeSinceRenovation = year + month / 12 + date / 365.25 - (ryear + 0.5); 
-        renovationFV = Math.pow(1 + renovationRate,timeSinceRenovation);
+        renovationFV = Math.pow(1 + (renovationRate/100),timeSinceRenovation);
     }else {
         renovationFV = 0;
     }   
