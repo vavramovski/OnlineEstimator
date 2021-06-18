@@ -1,10 +1,11 @@
-//git test
+//test
 let latestYear = 2019;
 const PriceModel = require('./Model/PriceModel');
 const ParametersModel = require('./Model/ParameterModel');
 const AvgParameterModel = require('./Model/AvgParameter');
 const AssociatedZipModel = require('./Model/AssociatedZip');
 const { prototype } = require('body-parser');
+const { count } = require('./Model/PriceModel');
 
 module.exports = async function Calculator(userInput) {
     let zip = await zipCheck(userInput.zip);
@@ -16,8 +17,8 @@ module.exports = async function Calculator(userInput) {
     let surfaceHabitable = userInput.surfaceHabitable;
     let renovationPrice = userInput.renovationPrice;
 
-    let propertyRate = await getPropertyRate(cyear,zip,propertyType);
     let constructionPrice = await getConstructionPrice(cyear,zip,propertyType);
+    let propertyRate = await getPropertyRate(cyear,zip,propertyType);
     let renovationFV = await getRenovationFv(ryear,renovationCheck,propertyType,zip);
 
     let errMsg = GetErrorMsg(propertyRate,constructionPrice,renovationFV);
@@ -29,7 +30,7 @@ module.exports = async function Calculator(userInput) {
         };
     }
 
-    let timeSinceConstr = getTimeSinceConstr(cyear);
+    let timeSinceConstr = await getTimeSinceConstr(cyear,zip,propertyType);
 
     let priceFV = constructionPrice * Math.pow(1 + (propertyRate/100),timeSinceConstr);
 
@@ -39,6 +40,31 @@ module.exports = async function Calculator(userInput) {
         value: result.toFixed(0)
     };
 }
+
+//This function adjusts to get the next year if there is no transaction on cyear
+async function getOffsetCounter(cyear,zip,propertyType) {
+    let count = 0
+    let flag = 0
+    while (flag == 0 && cyear+count >= 2004 && cyear+count <= latestYear){
+        let obj = {
+            zip,
+            year: cyear+count
+        }
+        let priceObj = await PriceModel.find(obj);
+        if(priceObj.length) {
+            flag= priceObj[0][propertyType + 'New']
+            if(flag==0){
+            count++;            
+            }
+        }else {
+                    return {
+                    err: `Couldn't find Price associated with the data :- zip: ${zip}, property type: ${propertyType + 'New'}, year: ${cyear}`
+                    };       
+        }
+    }
+    return count
+}
+
 
 function GetErrorMsg(propertyRate,constructionPrice,renovationFV) {
     if(propertyRate.err) {
@@ -64,11 +90,12 @@ async function zipCheck(userZip) {
 }
  
 async function getPropertyRate(cyear,zip,propertyType) {
-    if(cyear >= 2004 && cyear <= latestYear) {
+    let count=await getOffsetCounter(cyear,zip,propertyType)
+    if(cyear+count >= 2004 && cyear+count <= latestYear) {
         let obj = {
             type: propertyType,
             zip,
-            year: cyear
+            year: cyear+count
         }
         let rateObj = await ParametersModel.find(obj);
         if(rateObj.length) {
@@ -96,12 +123,14 @@ async function getPropertyRate(cyear,zip,propertyType) {
     }
 }
 
+
 async function getConstructionPrice(cyear,zip,propertyType) {
-    if(cyear >= 2004 && cyear <= latestYear) {
+    let count= await getOffsetCounter(cyear,zip,propertyType)
+    if(cyear+count >= 2004 && cyear+count <= latestYear) {
         //fetch data based on zip and c_year and type and type will be new        
         let obj = {
             zip,
-            year: cyear,
+            year: cyear+count,
         }
 
         let priceObj = await PriceModel.find(obj);
@@ -112,7 +141,7 @@ async function getConstructionPrice(cyear,zip,propertyType) {
                 err: `Couldn't find Price associalted with the data :- zip: ${zip}, property type: ${propertyType + 'New'}, year: ${cyear}`
             }
         }
-    }else if(cyear > latestYear) {
+    }else if(cyear+count > latestYear) {
         //fetch data based on zip and type and year as 2019 and type will be new
         let obj = {
             zip,
@@ -145,11 +174,11 @@ async function getConstructionPrice(cyear,zip,propertyType) {
     }
 }
 
-function getTimeSinceConstr(cyear) {
+async function getTimeSinceConstr(cyear,zip,propertyType) {
+    let count= await getOffsetCounter(cyear,zip,propertyType)
     let {year,month,date} = getCurrentDate();
-    if(cyear >= 2004 && 
-        cyear <= 2019) {
-        return year + month/12 + date/365.25 - (cyear + 0.5);
+    if(cyear+count >= 2004 && cyear+count <= latestYear) {
+        return year + month/12 + date/365.25 - (cyear+count + 0.5);
     }else {
         return year + month / 12 + date / 365.25 - (latestYear + 0.5)
     }      
