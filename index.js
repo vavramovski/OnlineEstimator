@@ -1,7 +1,7 @@
 const express = require('express');
 
 const mongoose = require('mongoose');
-const uri = "mongodb+srv://AnkitLall:Aciremaank2@@cluster0.lllsp.mongodb.net/OnlineEstimatorDB?retryWrites=true&w=majority";
+const uri = "mongodb+srv://Giacomo:LmQntqv4tcgRXxoN@cluster0.rv3kt.mongodb.net/OnlineEstimatorDB?retryWrites=true&w=majority";
 
 const readXlsxFile = require('read-excel-file/node');
 const Excel = require('exceljs')
@@ -31,7 +31,9 @@ mongoose.connect(uri,{
     useNewUrlParser: true,
     useUnifiedTopology: true
 })
-.then(() => console.log('Mongodb connection successful'))
+.then(() => {
+    console.log('Mongodb connection successful')
+})
 .catch(err => console.log(err))
 
 app.post('/submit', (req, res) => {    
