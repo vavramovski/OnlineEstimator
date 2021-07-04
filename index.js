@@ -43,7 +43,11 @@ app.post('/submit', (req, res) => {
             let resValue = result.value;
 
             if(!result.err) {
-                UserInputSchema.collection.insertOne(req.body)
+                let userInput={
+                    ...req.body,
+                    finalPrice: resValue    
+                }
+                UserInputSchema.collection.insertOne(userInput)
                     .then(() => console.log("Successfully inserted user input"))
                     .catch((err) => console.log(err))
             }  
@@ -71,7 +75,8 @@ async function DownloadUserInputs() {
             {header: 'Surface Habitable', key: 'surfaceHabitable'},
             {header: 'Renovation Price', key: 'renovationPrice'},
             {header: 'Land Area', key: 'landArea'},
-            {header: 'Renovation Check', key: 'renovationCheck'}
+            {header: 'Renovation Check', key: 'renovationCheck'},
+            {header: 'Final Price', key: 'finalPrice'},
         ];
 
         worksheet.columns.forEach(column => {
@@ -89,7 +94,8 @@ async function DownloadUserInputs() {
                 surfaceHabitable: row.surfaceHabitable,
                 renovationPrice: row.renovationPrice,
                 landArea: row.landArea,
-                renovationCheck: row.renovationCheck
+                renovationCheck: row.renovationCheck,
+                finalPrice:row.finalPrice
             }
             worksheet.addRow(rowData);
         });
