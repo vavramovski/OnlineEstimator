@@ -1,7 +1,7 @@
 const express = require('express');
 
 const mongoose = require('mongoose');
-const uri = "mongodb+srv://AnkitLall:QQWal2kpIKZ4otMl@cluster0.2hn3k.mongodb.net/OnlineEstimatorDB?retryWrites=true&w=majority";
+const uri = "mongodb+srv://Giacomo:LmQntqv4tcgRXxoN@cluster0.rv3kt.mongodb.net/OnlineEstimatorDB?retryWrites=true&w=majority";
 
 const readXlsxFile = require('read-excel-file/node');
 const Excel = require('exceljs')
