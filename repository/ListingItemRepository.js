@@ -13,15 +13,18 @@ module.exports.getAllDistinctZip = () => {
 }
 
 module.exports.getAddressesForZip = (zip) => {
+    const zipArray = zip.split(',').map(item => {
+        return {zip: parseInt(item)}
+    });
     return ListingItem.aggregate([
         {
             $match: {
-                zip: zip
+                $or: zipArray
             }
         },
         {
             $group: {
-                _id: '$zip',
+                _id: 'zipcode',
                 addresses: {
                     $addToSet: '$address'
                 }
@@ -47,7 +50,11 @@ module.exports.handleSearch = function (query) {
         dateFrom, dateTo, minPrice, maxPrice, zip, address, type, minLivingArea,
         maxLivingArea, minLandArea, maxLandArea
     } = query;
+    dateFrom = new Date(dateFrom);
+    dateTo = new Date(dateTo);
+
     const searchCriteria = {};
+    const aggregate = [];
 
     // Add date to searchCriteria
     if (dateFrom && dateFrom !== 'undefined' && dateTo && dateTo !== 'undefined') {
@@ -67,19 +74,31 @@ module.exports.handleSearch = function (query) {
         searchCriteria.price = priceCriteria;
     }
 
-    // Add Zip to searchCriteria
+    /*// Add Zip to searchCriteria
     if (zip && zip !== '' && zip !== 'Zip' && zip) {
-        searchCriteria.zip = parseInt(zip);
-    }
+        for (let i = 0; i < zip.length; i++) {
+            searchCriteria.zip = parseInt(zip);
+        }
+    }*/
 
     // Add Address to searchCriteria
-    if (address && address !== '' && address !== 'Street') {
-        searchCriteria.address = address;
+    if (address && address.length > 0) {
+        const aggregateAddress = {
+            $or: address.map(item => {
+                return {address: item}
+            })
+        };
+        aggregate.push({$match:aggregateAddress});
     }
 
     // Add Type to searchCriteria
-    if (type && type !== '' && type !== 'Type') {
-        searchCriteria.type = type;
+    if (type && type.length > 0) {
+        const aggregateType = {
+            $or: type.map(item => {
+                return {type: item}
+            })
+        };
+        aggregate.push({$match:aggregateType});
     }
 
     // Add livingArea to criteria
@@ -98,8 +117,10 @@ module.exports.handleSearch = function (query) {
         searchCriteria.landArea = landAreaCriteria;
     }
 
+    aggregate.push({$match:searchCriteria});
     // Query
-    return new Promise((resolve, reject) => {
+    return ListingItem.aggregate(aggregate)
+    /*return new Promise((resolve, reject) => {
         ListingItem.find(searchCriteria, (err, result) => {
             console.error(err);
             if (err) {
@@ -110,5 +131,5 @@ module.exports.handleSearch = function (query) {
             resolve(result);
         })
     })
-
+*/
 };

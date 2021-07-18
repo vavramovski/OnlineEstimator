@@ -1,0 +1,32 @@
+ul, li {
+    list-style: none;
+}
+
+#wrapper {
+    width: 900px;
+    margin: 20px auto;
+}
+
+.data-container {
+    margin-top: 20px;
+}
+
+.data-container ul {
+    padding: 0;
+    margin: 0;
+}
+
+.data-container li {
+    margin-bottom: 5px;
+    padding: 5px 10px;
+    /*background: #eee;*/
+    /*color: transparent !important;*/
+    font-family: "Arial Black", Arial, serif;
+}
+li.active>a{
+    background: transparent !important;
+}
+.pagination li.active {
+    background-color: #26a69a !important;
+    color: #26a69a !important;
+}

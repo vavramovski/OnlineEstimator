@@ -15,7 +15,12 @@ const UserInputSchema = require('./Model/UserInput');
 const ListingItem = require('./Model/ListingItem');
 
 const Calculator = require('./Calculator');
-const {getAllDistinctZip, getAddressesForZip, getAllDistinctType, handleSearch} = require("./repository/ListingItemRepository");
+const {
+    getAllDistinctZip,
+    getAddressesForZip,
+    getAllDistinctType,
+    handleSearch
+} = require("./repository/ListingItemRepository");
 
 const app = express();
 const port = 3000;
@@ -23,6 +28,7 @@ const port = 3000;
 // app.use(cors());
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
+
 app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
@@ -64,9 +70,11 @@ app.post('/submit', (req, res) => {
 
 app.get('/zip', (req, res) => {
     if (req.query.postcode) {
-        const postcode = parseInt(req.query.postcode);
-        getAddressesForZip(postcode)
-            .then(data => res.send(data[0]))
+        getAddressesForZip(req.query.postcode)
+            .then(data => {
+                console.log(data)
+                res.send(data[0])
+            })
             .catch(err => res.status(500));
     } else {
         getAllDistinctZip()
@@ -81,9 +89,12 @@ app.get('/types', (req, res) => {
         .catch(err => res.status(500));
 })
 
-app.get('/search', (req, res) => {
-    handleSearch(req.query)
-        .then(data => res.send(data))
+app.post('/search', (req, res) => {
+    handleSearch(req.body)
+        .then(data => {
+            console.log(data);
+            res.send(data)
+        })
         .catch(err => res.status(500));
 })
 
